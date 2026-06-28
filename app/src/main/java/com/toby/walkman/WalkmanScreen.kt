@@ -64,16 +64,17 @@ fun WalkmanScreen(vm: PlayerViewModel) {
     val rotation = if (vm.isPlaying) spin else 0f
 
     Box(Modifier.fillMaxSize().background(Color.Black), contentAlignment = Alignment.Center) {
-        // The Walkman body fills the (phone-ratio) screen.
-        Column(Modifier.fillMaxSize().padding(16.dp)) {
-            Box(
-                Modifier.fillMaxSize().clip(RoundedCornerShape(28.dp)).background(Blue)
-            ) {
-                Column(Modifier.fillMaxSize()) {
-                    silverTop(vm, Modifier.fillMaxWidth().fillMaxHeight(0.15f))
-                    blueFace(vm, progress, rotation, Modifier.fillMaxWidth().weight(1f))
-                }
-            }
+        // The Walkman is a landscape device: a centered rectangle as tall as the screen.
+        Column(
+            Modifier
+                .fillMaxHeight()
+                .aspectRatio(1.5f)
+                .padding(14.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(Blue)
+        ) {
+            silverTop(vm, Modifier.fillMaxWidth().fillMaxHeight(0.15f))
+            blueFace(vm, progress, rotation, Modifier.fillMaxWidth().weight(1f))
         }
 
         if (!vm.hasAccess) {
@@ -146,7 +147,7 @@ private fun verticalLabel(text: String, size: androidx.compose.ui.unit.TextUnit,
 @Composable
 private fun cassetteWindow(vm: PlayerViewModel, progress: Float, rotation: Float) {
     Box(
-        Modifier.fillMaxWidth().aspectRatio(1.25f)
+        Modifier.fillMaxHeight(0.66f).aspectRatio(1.7f, matchHeightConstraintsFirst = true)
             .clip(RoundedCornerShape(12.dp))
             .background(Color(0xFF141414))
     ) {
