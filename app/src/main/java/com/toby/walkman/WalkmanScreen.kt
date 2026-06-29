@@ -1,7 +1,10 @@
 package com.toby.walkman
 
+import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.provider.Settings
+import android.widget.Toast
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -11,6 +14,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowLeft
@@ -33,6 +37,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -93,6 +99,55 @@ fun WalkmanScreen(vm: PlayerViewModel) {
                 }
             }
         }
+
+        // Top-corner Spotify launcher.
+        spotifyButton(Modifier.align(Alignment.TopEnd).padding(18.dp))
+    }
+}
+
+@Composable
+private fun spotifyButton(modifier: Modifier = Modifier) {
+    val ctx = LocalContext.current
+    Box(
+        modifier
+            .size(46.dp)
+            .clip(CircleShape)
+            .background(Color(0xFF1DB954))   // Spotify green
+            .clickable { openSpotify(ctx) },
+        contentAlignment = Alignment.Center
+    ) {
+        // The Spotify mark: three nested arcs.
+        Canvas(Modifier.size(30.dp)) {
+            val w = size.width
+            val arcs = listOf(0.34f to 0.18f, 0.50f to 0.25f, 0.66f to 0.32f)
+            for ((y, inset) in arcs) {
+                val yy = w * y
+                val path = Path().apply {
+                    moveTo(w * inset, yy)
+                    quadraticBezierTo(w / 2f, yy - w * 0.12f, w * (1 - inset), yy)
+                }
+                drawPath(path, Color.Black.copy(alpha = 0.92f),
+                    style = Stroke(width = w * 0.085f, cap = StrokeCap.Round))
+            }
+        }
+    }
+}
+
+private fun openSpotify(ctx: Context) {
+    val launch = ctx.packageManager.getLaunchIntentForPackage("com.spotify.music")
+    if (launch != null) {
+        ctx.startActivity(launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        return
+    }
+    // Spotify not installed — try the open.spotify.com handler, then the Play Store.
+    runCatching {
+        ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://open.spotify.com"))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }.recoverCatching {
+        ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.spotify.music"))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }.onFailure {
+        Toast.makeText(ctx, "Spotify isn't installed", Toast.LENGTH_SHORT).show()
     }
 }
 
