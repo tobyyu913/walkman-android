@@ -22,12 +22,16 @@ import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -59,6 +63,7 @@ private val Orange = Color(0xFFF2851E)
 @Composable
 fun WalkmanScreen(vm: PlayerViewModel) {
     val ctx = LocalContext.current
+    var showSettings by remember { mutableStateOf(false) }
     val dur = vm.now?.durationMs ?: 0L
     val progress = if (dur > 0) (vm.positionMs.toFloat() / dur).coerceIn(0f, 1f) else 0f
 
@@ -100,8 +105,34 @@ fun WalkmanScreen(vm: PlayerViewModel) {
             }
         }
 
-        // Top-corner Spotify launcher.
+        // Top-corner launchers: settings (left), Spotify (right).
+        settingsButton(Modifier.align(Alignment.TopStart).padding(18.dp)) { showSettings = true }
         spotifyButton(Modifier.align(Alignment.TopEnd).padding(18.dp))
+
+        // A small badge while a focus lock is running.
+        if (LockController.active) {
+            Text(
+                "🔒 ${LockController.remainingLabel()}",
+                color = Color(0xFF1DB954), fontSize = 12.sp,
+                modifier = Modifier.align(Alignment.TopStart).padding(start = 74.dp, top = 28.dp)
+            )
+        }
+
+        if (showSettings) SettingsScreen(onClose = { showSettings = false })
+    }
+}
+
+@Composable
+private fun settingsButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
+    Box(
+        modifier
+            .size(46.dp)
+            .clip(CircleShape)
+            .background(Color.White.copy(alpha = 0.12f))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(Icons.Filled.Settings, "Settings", tint = Color.White, modifier = Modifier.size(26.dp))
     }
 }
 

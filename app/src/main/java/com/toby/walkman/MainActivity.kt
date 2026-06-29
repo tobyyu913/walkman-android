@@ -15,6 +15,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        LockController.load(this)
         setContent {
             Surface(Modifier.fillMaxSize(), color = Color.Black) {
                 WalkmanScreen(vm)
